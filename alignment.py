@@ -2,6 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import streamlit as st
+import itertools
 
 # mostly just to ensure that the input is the same
 def set_sequences(seq1, seq2):
