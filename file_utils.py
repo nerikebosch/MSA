@@ -12,30 +12,16 @@ def load_fasta_sequences(input_file):
         Returns:
             str: The loaded sequence as a string.
     """
+    fasta_sequences = []
 
     stringio = StringIO(input_file.getvalue().decode('utf-8'))
-    fasta_sequences = SeqIO.read(stringio, "fasta")
-    fasta_sequences = str(fasta_sequences.seq)
+    for sequence in SeqIO.parse(stringio, "fasta"):
+        fasta_sequences.append(str(sequence.seq))
 
     return fasta_sequences
 
 
 def get_text(matching_length, match_percentage, gap_percentage, aligned_seq1, aligned_seq2, matching_seq, idx=None):
-    """
-        Generate a formatted text block summarizing the alignment results.
-
-        Args:
-            matching_length (int): Total length of the alignment.
-            match_percentage (float): Percentage of identical positions.
-            gap_percentage (float): Percentage of gaps in the alignment.
-            aligned_seq1 (str): Aligned version of the first sequence.
-            aligned_seq2 (str): Aligned version of the second sequence.
-            matching_seq (str): String representing match/mismatch/gap positions.
-            idx (int, optional): Path index number for labeling multiple paths. Defaults to None.
-
-        Returns:
-            str: Formatted text block summarizing alignment results.
-    """
 
     header = f"--- Path {idx} ---\n" if idx is not None else ""
     text = f"""{header}
