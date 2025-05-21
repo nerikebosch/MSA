@@ -1,3 +1,5 @@
+import datetime
+
 from alignment import *
 from file_utils import *
 import streamlit as st
@@ -5,6 +7,31 @@ import numpy as np
 import itertools
 
 def app_creation():
+    """
+        Initialize and run the Streamlit-based MSA (Multiple Sequence Alignment) Star Algorithm application.
+
+        This function sets up the user interface using Streamlit, including:
+        - Dynamic sequence input (manual or via FASTA file)
+        - User-defined scoring parameters (match, mismatch, gap)
+        - Execution of the Star MSA algorithm
+        - Calculation and display of alignment statistics
+        - Saving the final results to a text file
+
+        The Star alignment method identifies a central sequence with the highest pairwise score sum,
+        and aligns all other sequences to it.
+
+        Uses:
+            - load_fasta_sequences: To load sequences from a file
+            - set_sequences, matrix_building, algorithm, traceback, reconstruct_alignment,
+              merge_alignment, calculate_identity_percentage, calculate_msa_score,
+              count_msa_statistics: For MSA processing
+            - get_text, save_to_text_file: For result formatting and saving
+
+        Returns:
+            None
+    """
+
+    st.set_page_config(layout="wide")
     st.title("MSA Star Algorithm")
 
     # Initialize session state
@@ -20,7 +47,6 @@ def app_creation():
         if len(st.session_state.sequences) > 1:
             st.session_state.sequences.pop(index)
 
-    # UI rendering
     new_sequences = []
 
     st.markdown("### Input Sequences")
@@ -99,8 +125,6 @@ def app_creation():
         # Star alignment
         center_seq = new_sequences[max_row_index]
         aligned_center = center_seq
-        # center_ungapped = center_seq
-        # st.write("center_ungapped:", center_ungapped)
         aligned_others = []
         order = [i for i in range(length) if i != max_row_index]
 
@@ -126,47 +150,74 @@ def app_creation():
                 match_value,
                 mismatch_value,
             )
-            st.write("sequence 1 before reconstruct", seq1)
-            st.write("sequence 2 before reconstruct", seq2)
-
 
             new_c, new_s = reconstruct_alignment(seq1, seq2, path)
-            st.write("sequence 1 after reconstruct", new_c)
-            st.write("sequence 2 after reconstruct", new_s)
             aligned_center, realigned_s, aligned_others = merge_alignment(
                 aligned_center, new_c, new_s, aligned_others
             )
 
-            #aligned_others.append(realigned_s)
-            st.write("── Step merge idx", idx, "──")
-            st.write(" merged_center after    : ", aligned_center)
-            st.write(" realigned_s            : ", realigned_s)
-            st.write(" aligned_others so far  :")
-            for j, o in enumerate(aligned_others):
-                st.write(f"   seq[{order[j]}]: {o}")
-
         # Final MSA display
         msa = [aligned_center] + aligned_others
 
-        st.write("=== FINAL ALIGNMENT ===")
-        st.write("aligned_center:", aligned_center)
-        for i, raw in enumerate(new_sequences):
-            st.write(f"s{i + 1} raw      :", raw)
-            st.write(f"s{i + 1} aligned  :", msa[i])
-
         identity_percent = calculate_identity_percentage(msa)
+        scoring = calculate_msa_score(msa, match_value, mismatch_value, gap_value)
+        st.markdown(f"### MSA Score")
+        st.write(f"Total Alignment Score: **{scoring}**")
 
         st.markdown(f"### Identity Percentage")
         st.write(f"Average Identity: **{identity_percent}%**")
 
-        st.markdown("### Final Multiple Sequence Alignment")
-        width = len(aligned_center)  # all rows are now this length
-        for idx, row in enumerate(msa, start=1):
-            spaced = " ".join(row)  # already exactly width columns
-            st.text(f"s{idx}: {spaced}")
+        matches, mismatches, gaps = count_msa_statistics(msa)
+        st.markdown("### Alignment Statistics")
+        st.write(f"Matches: **{matches}**")
+        st.write(f"Mismatches: **{mismatches}**")
+        st.write(f"Gaps: **{gaps}**")
 
-        st.write("=== FINAL ALIGNMENT ===")
-        st.write("aligned_center:", aligned_center)
-        for i, raw in enumerate(new_sequences):
-            st.write(f"s{i + 1} raw      :", raw)
-            st.write(f"s{i + 1} aligned  :", msa[i])
+        full_text = ""
+        full_text += get_text(
+            scoring,
+            identity_percent,
+            matches,
+            gaps,
+            mismatches,
+            msa,
+            match_value,
+            mismatch_value,
+            gap_value
+        )
+
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        filename = f"alignment_{date}.txt"
+
+        new_text = save_to_text_file(filename, full_text)
+
+        # Create a display for all sequences with proper styling
+        msa_display = ""
+        for idx, row in enumerate(msa, start=1):
+            # Join the characters with spaces for better readability
+            spaced = " ".join(row)
+            msa_display += f"s{idx}: {spaced}\n"
+
+        st.markdown("### Final Multiple Sequence Alignment")
+        st.code(msa_display, language=None)
+
+        st.markdown("""
+        <style>
+            .stCodeBlock {
+                max-width: 100% !important;
+                overflow-x: auto;
+                white-space: pre;
+                font-family: monospace;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+
+        st.divider()
+
+        col1, col2, col3 = st.columns(3)
+        with col2:
+            st.download_button(
+                label='Download Results',
+                data=new_text,
+                file_name=filename,
+            )

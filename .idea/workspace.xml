@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="885e4032-39b9-4f82-9995-8b082dd3d8d1" name="Changes" comment="started matrix for calculating algorithm for all matching of sequences">
+    <list default="true" id="885e4032-39b9-4f82-9995-8b082dd3d8d1" name="Changes" comment="Made algorithm work">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/alignment.py" beforeDir="false" afterPath="$PROJECT_DIR$/alignment.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/file_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/file_utils.py" afterDir="false" />
@@ -84,7 +84,9 @@
       <workItem from="1747228774436" duration="214000" />
       <workItem from="1747380737694" duration="840000" />
       <workItem from="1747670684229" duration="8229000" />
-      <workItem from="1747732943815" duration="21619000" />
+      <workItem from="1747732943815" duration="29385000" />
+      <workItem from="1747814707675" duration="846000" />
+      <workItem from="1747819009220" duration="804000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <option name="closed" value="true" />
@@ -110,7 +112,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746909303278</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Made algorithm work">
+      <option name="closed" value="true" />
+      <created>1747775471866</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1747775471866</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -120,6 +130,7 @@
     <MESSAGE value="initial commit" />
     <MESSAGE value="added needleman algorithm" />
     <MESSAGE value="started matrix for calculating algorithm for all matching of sequences" />
-    <option name="LAST_COMMIT_MESSAGE" value="started matrix for calculating algorithm for all matching of sequences" />
+    <MESSAGE value="Made algorithm work" />
+    <option name="LAST_COMMIT_MESSAGE" value="Made algorithm work" />
   </component>
 </project>
