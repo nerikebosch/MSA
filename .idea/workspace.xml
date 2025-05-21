@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="885e4032-39b9-4f82-9995-8b082dd3d8d1" name="Changes" comment="Made algorithm work">
+    <list default="true" id="885e4032-39b9-4f82-9995-8b082dd3d8d1" name="Changes" comment="Fixing some small ui changes and removing debugging">
+      <change afterPath="$PROJECT_DIR$/graph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alignment.py" beforeDir="false" afterPath="$PROJECT_DIR$/alignment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/file_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/file_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -86,7 +85,9 @@
       <workItem from="1747670684229" duration="8229000" />
       <workItem from="1747732943815" duration="29385000" />
       <workItem from="1747814707675" duration="846000" />
-      <workItem from="1747819009220" duration="804000" />
+      <workItem from="1747819009220" duration="1415000" />
+      <workItem from="1747821647691" duration="1627000" />
+      <workItem from="1747840672589" duration="2305000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <option name="closed" value="true" />
@@ -120,7 +121,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747775471866</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Fixing some small ui changes and removing debugging">
+      <option name="closed" value="true" />
+      <created>1747819850048</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1747819850048</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -131,6 +140,7 @@
     <MESSAGE value="added needleman algorithm" />
     <MESSAGE value="started matrix for calculating algorithm for all matching of sequences" />
     <MESSAGE value="Made algorithm work" />
-    <option name="LAST_COMMIT_MESSAGE" value="Made algorithm work" />
+    <MESSAGE value="Fixing some small ui changes and removing debugging" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixing some small ui changes and removing debugging" />
   </component>
 </project>

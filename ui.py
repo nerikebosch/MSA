@@ -2,6 +2,7 @@ import datetime
 
 from alignment import *
 from file_utils import *
+from graph import *
 import streamlit as st
 import numpy as np
 import itertools
@@ -95,129 +96,150 @@ def app_creation():
         )
 
     if st.button("Run MSA Star"):
-        st.success("Running MSA Star with these sequences:")
-        st.write(st.session_state.sequences)
+        # Check for empty or invalid sequences
+        valid_chars = set("ACGTURYKMSWBDHVN-")  # Adjust depending on DNA/RNA/protein
+        invalid_sequences = []
+        empty_sequences = []
 
-        # Build pairwise score matrix
-        length = len(new_sequences)
-        final_score_matrix = np.zeros((length, length))
-        idx_i = 0
-        for i, j in itertools.combinations(range(length), 2):
-            seq1_clean, seq2_clean = set_sequences(
-                new_sequences[i], new_sequences[j]
-            )
-            mat = matrix_building(seq1_clean, seq2_clean, gap_value)
-            score_mat = algorithm(
-                seq1_clean,
-                seq2_clean,
-                mat,
-                gap_value,
+        for i, seq in enumerate(new_sequences):
+            seq_upper = seq
+            if not seq_upper:
+                empty_sequences.append(i + 1)
+
+        if empty_sequences:
+            st.error(f"Sequence(s) {empty_sequences} are empty. Please provide valid input.")
+        elif invalid_sequences:
+            bad_info = "\n".join([f"Sequence {i}: {s}" for i, s in invalid_sequences])
+            st.error(f"The following sequence(s) contain invalid characters:\n{bad_info}")
+        else:
+            st.success("Running MSA Star with these sequences:")
+            st.write(st.session_state.sequences)
+
+            # Build pairwise score matrix
+            length = len(new_sequences)
+            final_score_matrix = np.zeros((length, length))
+            idx_i = 0
+            for i, j in itertools.combinations(range(length), 2):
+                seq1_clean, seq2_clean = set_sequences(
+                    new_sequences[i], new_sequences[j]
+                )
+                mat = matrix_building(seq1_clean, seq2_clean, gap_value)
+                score_mat = algorithm(
+                    seq1_clean,
+                    seq2_clean,
+                    mat,
+                    gap_value,
+                    match_value,
+                    mismatch_value,
+                )
+                score = score_mat[-1, -1]
+                final_score_matrix[i, j] = score
+                final_score_matrix[j, i] = score
+
+            row_sums = final_score_matrix.sum(axis=1)
+            max_row_index = int(np.argmax(row_sums))
+
+            # Star alignment
+            center_seq = new_sequences[max_row_index]
+            aligned_center = center_seq
+            aligned_others = []
+            order = [i for i in range(length) if i != max_row_index]
+
+            for idx in order:
+                seq = new_sequences[idx]
+
+                seq1, seq2 = set_sequences(aligned_center, seq)
+                seq2 = project_onto_master(seq1,seq2)
+                mat = matrix_building(seq1, seq2, gap_value)
+                score_mat = algorithm(
+                    seq1,
+                    seq2,
+                    mat,
+                    gap_value,
+                    match_value,
+                    mismatch_value,
+                )
+                path = traceback(
+                    score_mat,
+                    seq1,
+                    seq2,
+                    gap_value,
+                    match_value,
+                    mismatch_value,
+                )
+
+                new_c, new_s = reconstruct_alignment(seq1, seq2, path)
+                aligned_center, realigned_s, aligned_others = merge_alignment(
+                    aligned_center, new_c, new_s, aligned_others
+                )
+
+            # Final MSA display
+            msa = [aligned_center] + aligned_others
+
+            identity_percent = calculate_identity_percentage(msa)
+            scoring = calculate_msa_score(msa, match_value, mismatch_value, gap_value)
+            st.markdown(f"### MSA Score")
+            st.write(f"Total Alignment Score: **{scoring}**")
+
+            st.markdown(f"### Identity Percentage")
+            st.write(f"Average Identity: **{identity_percent}%**")
+
+            matches, mismatches, gaps = count_msa_statistics(msa)
+            st.markdown("### Alignment Statistics")
+            st.write(f"Matches: **{matches}**")
+            st.write(f"Mismatches: **{mismatches}**")
+            st.write(f"Gaps: **{gaps}**")
+
+            full_text = ""
+            full_text += get_text(
+                scoring,
+                identity_percent,
+                matches,
+                gaps,
+                mismatches,
+                msa,
                 match_value,
                 mismatch_value,
-            )
-            score = score_mat[-1, -1]
-            final_score_matrix[i, j] = score
-            final_score_matrix[j, i] = score
-
-        row_sums = final_score_matrix.sum(axis=1)
-        max_row_index = int(np.argmax(row_sums))
-
-        # Star alignment
-        center_seq = new_sequences[max_row_index]
-        aligned_center = center_seq
-        aligned_others = []
-        order = [i for i in range(length) if i != max_row_index]
-
-        for idx in order:
-            seq = new_sequences[idx]
-
-            seq1, seq2 = set_sequences(aligned_center, seq)
-            seq2 = project_onto_master(seq1,seq2)
-            mat = matrix_building(seq1, seq2, gap_value)
-            score_mat = algorithm(
-                seq1,
-                seq2,
-                mat,
-                gap_value,
-                match_value,
-                mismatch_value,
-            )
-            path = traceback(
-                score_mat,
-                seq1,
-                seq2,
-                gap_value,
-                match_value,
-                mismatch_value,
+                gap_value
             )
 
-            new_c, new_s = reconstruct_alignment(seq1, seq2, path)
-            aligned_center, realigned_s, aligned_others = merge_alignment(
-                aligned_center, new_c, new_s, aligned_others
-            )
+            date = datetime.datetime.now().strftime("%Y-%m-%d")
+            filename = f"alignment_{date}.txt"
 
-        # Final MSA display
-        msa = [aligned_center] + aligned_others
+            new_text = save_to_text_file(filename, full_text)
 
-        identity_percent = calculate_identity_percentage(msa)
-        scoring = calculate_msa_score(msa, match_value, mismatch_value, gap_value)
-        st.markdown(f"### MSA Score")
-        st.write(f"Total Alignment Score: **{scoring}**")
+            # Create a display for all sequences with proper styling
+            msa_display = ""
+            for idx, row in enumerate(msa, start=1):
+                # Join the characters with spaces for better readability
+                spaced = " ".join(row)
+                msa_display += f"s{idx}: {spaced}\n"
 
-        st.markdown(f"### Identity Percentage")
-        st.write(f"Average Identity: **{identity_percent}%**")
+            st.markdown("### Final Multiple Sequence Alignment")
+            st.code(msa_display, language=None)
 
-        matches, mismatches, gaps = count_msa_statistics(msa)
-        st.markdown("### Alignment Statistics")
-        st.write(f"Matches: **{matches}**")
-        st.write(f"Mismatches: **{mismatches}**")
-        st.write(f"Gaps: **{gaps}**")
+            st.markdown("""
+            <style>
+                .stCodeBlock {
+                    max-width: 100% !important;
+                    overflow-x: auto;
+                    white-space: pre;
+                    font-family: monospace;
+                }
+            </style>
+            """, unsafe_allow_html=True)
 
-        full_text = ""
-        full_text += get_text(
-            scoring,
-            identity_percent,
-            matches,
-            gaps,
-            mismatches,
-            msa,
-            match_value,
-            mismatch_value,
-            gap_value
-        )
+            # Show heatmap
+            st.markdown("### MSA Heatmap")
+            fig = plot_msa_heatmap(msa)
+            st.pyplot(fig)
 
-        date = datetime.datetime.now().strftime("%Y-%m-%d")
-        filename = f"alignment_{date}.txt"
+            st.divider()
 
-        new_text = save_to_text_file(filename, full_text)
-
-        # Create a display for all sequences with proper styling
-        msa_display = ""
-        for idx, row in enumerate(msa, start=1):
-            # Join the characters with spaces for better readability
-            spaced = " ".join(row)
-            msa_display += f"s{idx}: {spaced}\n"
-
-        st.markdown("### Final Multiple Sequence Alignment")
-        st.code(msa_display, language=None)
-
-        st.markdown("""
-        <style>
-            .stCodeBlock {
-                max-width: 100% !important;
-                overflow-x: auto;
-                white-space: pre;
-                font-family: monospace;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-
-        st.divider()
-
-        col1, col2, col3 = st.columns(3)
-        with col2:
-            st.download_button(
-                label='Download Results',
-                data=new_text,
-                file_name=filename,
-            )
+            col1, col2, col3 = st.columns(3)
+            with col2:
+                st.download_button(
+                    label='Download Results',
+                    data=new_text,
+                    file_name=filename,
+                )
